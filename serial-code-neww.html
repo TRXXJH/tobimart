@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>序列號驗證</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            padding: 30px 20px;
+            width: 100%;
+            max-width: 500px;
+            margin-top: 30vh;
+        }
+        h1 {
+            text-align: center;
+            margin: 0 0 40px 0;
+            color: #333;
+            font-size: 24px;
+        }
+        .input-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        .underline-input {
+            width: 80%;
+            border: none;
+            border-bottom: 2px solid #4CAF50;
+            padding: 12px 0;
+            font-size: 18px;
+            background: transparent;
+            outline: none;
+            text-align: center;
+        }
+        .submit-btn {
+            width: 60%;
+            padding: 10px 24px;
+            background: #ff69b4;
+            color: white;
+            border: none;
+            border-radius: 0;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 20px auto;
+            display: block;
+        }
+        .result-page {
+            display: none;
+            padding: 30px 20px;
+            width: 100%;
+            max-width: 500px;
+        }
+        .result-text {
+            color: red;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .prize-text {
+            font-size: 20px;
+            color: #333;
+            text-align: left;
+        }
+        .footer-link {
+            position: fixed;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+        }
+        .footer-link a {
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 输入页面 -->
+    <div class="container" id="inputPage">
+        <h1>輸入序列號</h1>
+        <div class="input-container">
+            <input type="text" class="underline-input" id="serialInput" placeholder="請輸入code">
+        </div>
+        <button class="submit-btn" onclick="checkSerial()">送出</button>
+    </div>
+
+    <!-- 结果页面 -->
+    <div class="container result-page" id="resultPage">
+        <div class="result-text">当選</div>
+        <div class="prize-text" id="prizeResult"></div>
+    </div>
+
+    <!-- 底部链接 -->
+    <div class="footer-link">
+        <a href="https://www.instagram.com/trxxjh?igsh=M3ZtNzY3NzM0Z3E1&utm_source=qr" target="_blank">trxxjh</a>
+    </div>
+
+    <script>
+        const serialCodes = [
+            "a3B7e1Z8pK","V2r5L3x0Nq","Y6j8C4d1Fv","m8P2s9H7aT","R4t0W1eV5X",
+            "G7q3K9z8Bf","J0h5N6y1Rk","F1d2T4x7Lz","S8k3W0fR6m","C9j1N2b8Qe",
+            "p4H6r5Z0tY","E3v8G2m1Fq","w7Q0d3L4nA","T5s1K9j2Xb","z2Y6e8F7gP",
+            "M4n5H0j1Qx","D8k3L9y2Rf","X0m4P1t6Sg","i7F2z9N3wQ","B1h9Y4d8Rk",
+            "L3j5C7x1Pq","H6t0W2n8Fv","a9E1p7M4jK","T3d8R6h5Xq","S2v4N0m1Fc",
+            "J8k1B7r3Hn","Q5z0Y2t6Lp","D9x7G1s4Kf","m3P5j8W0rY","R4n2F6k1Zb",
+            "K8q6L0t3Jv","U1f3A9e7Dg","c7H0n8W4yP","Z2t5J1y9Rk","B6e4X1m3Qj",
+            "N9d2R8h5Kp","V0p1M3j6Fz","F7k2N4w8Bq","G3r5T8j1Yx","K6h9C0m2Lp",
+            "S4w1Y8z3Rf","L2g5D9t7Jq","H0f3R2n6Kw","P8m2X4j1Qy","T9j1L5k0Fv",
+            "E3c6P8n4Wb","X7t0J1d5Zk","C2q5K8f9Yg","M4h1R7j3Dq","a9N6e3B2Xv",
+            "w1F4m8T0gY","J5k3P1n6Qf","D8t2W0h9Rj","Z6n5Y1x3Fc","R2p7H4j8Kq",
+            "T3v1M6b0Zg","S8k2L3r9Yx","N0j5X4t1He","Q1w6G2n8Rf","B4e3J7t5Kp",
+            "F9c1L8m2Jx","Y3m5K0h4Dq","P7j9W2t1Fg","L1h2R8n5Kc","T0g6D9x3Pf",
+            "K8n3C1r4Wq","V5j2Y0t7Qx","E4k6H3m1Fv","B2r0J5t9Zg","S1m4N8k3Lc",
+            "H8f2P1y5Dq","R3w5C6n0Jx","D4t9M2b1Kq","J7h0G3k4Lf","W2n5Y1e8Rg",
+            "Q9r1V4t3Jx","G8k3X6h0Fv","C5m0R2j8Yq","T1w8N5k2Lx","H7d4J1p9Qf",
+            "M0q3B8t6Kj","L2x9R7f1Yg","E5t1H4m0Dc","W4y2K9j8Rf","N6p1L5x3Fq",
+            "R0g3J8k2Vf","X2c4D1y7Kb","S3h8T0j6Qw","A5n9L2m4Rg","T8j5K1c7Fw",
+            "D6p0Y4t1Qx","F3h7G2m9Zq","Q1j2W8k5Lc","J4k9N3d0Rf","B9t1H5m2Cg",
+            "E0g6K3y8Xq","M7r2P1n5Lf","L3h8T0k6Jb","X2j9F1c4Rg","R5w2N8j0Qf"
+        ];
+
+        function checkSerial() {
+            const input = document.getElementById('serialInput').value.trim();
+            const index = serialCodes.indexOf(input);
+            
+            if (index === -1) {
+                alert('無効なコードです');
+                return;
+            }
+
+            document.getElementById('inputPage').style.display = 'none';
+            document.getElementById('resultPage').style.display = 'block';
+
+            const position = index + 1;
+            let prize = '';
+            if (position <= 5) prize = 'A賞';
+            else if (position <= 15) prize = 'B賞';
+            else if (position <= 40) prize = 'C賞';
+            else if (position <= 70) prize = 'D賞';
+            else prize = 'E賞';
+
+            document.getElementById('prizeResult').textContent = prize;
+        }
+    </script>
+</body>
+</html>
